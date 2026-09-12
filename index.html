@@ -124,15 +124,24 @@
         .feedback { margin-top: 15px; font-weight: bold; }
         .correct { color: #2e7d32; }
         .incorrect { color: #c62828; }
-        
-        .figure-grid {
-            display: flex; gap: 10px; margin: 15px 0;
+      .figure-grid {
+            display: flex; gap: 15px; margin: 20px 0;
         }
         .figure-box {
-            width: 100px; height: 100px;
-            border: 1px dashed #999;
-            display: flex; align-items: center; justify-content: center;
-            background-size: cover;
+            width: 120px; height: 120px;
+            border: 2px solid #333;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            background-color: #ccc; /* Creates grid lines */
+        }
+        .figure-cell {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
         }
     </style>
 </head>
@@ -430,19 +439,102 @@
             const j = Math.floor(Math.random() * (i + 1));
             [latinData[i], latinData[j]] = [latinData[j], latinData[i]];
         }
+// --- DYNAMIC FIGURE SEQUENCE GENERATOR ---
+        const figureData = [];
+        const symbols = ['●', '■', '▲', '★', '♦'];
 
-        const figureData = [
-            {
-                id: 1, level: "low",
-                images: ["images/fig-1.png", "images/fig-2.png", "images/fig-3.png", "images/fig-4.png"],
-                options: [
-                    { id: "opt1", text: "Moves diagonally one field at a time." },
-                    { id: "opt2", text: "Moves vertically one field at a time and bounces off the boundary." },
-                    { id: "opt3", text: "Rotates 90 degrees to the right." }
-                ],
-                correctOption: "opt2"
+        function generateFigures(level, count) {
+            for (let i = 0; i < count; i++) {
+                let frames = [[], [], [], []];
+                let symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                let startPos = Math.floor(Math.random() * 9);
+                
+                let ruleText = "";
+                let wrong1, wrong2;
+                
+                if (level === "low") {
+                    // LOW: Moves 1 step horizontally or vertically (wraps around)
+                    let direction = Math.floor(Math.random() * 4);
+                    let step;
+                    
+                    if (direction === 0) { step = 1; ruleText = "Moves one square to the right."; wrong1 = "Moves one square to the left."; wrong2 = "Moves one square down."; }
+                    if (direction === 1) { step = -1; ruleText = "Moves one square to the left."; wrong1 = "Moves one square to the right."; wrong2 = "Moves one square up."; }
+                    if (direction === 2) { step = 3; ruleText = "Moves one square down."; wrong1 = "Moves one square up."; wrong2 = "Moves diagonally down-right."; }
+                    if (direction === 3) { step = -3; ruleText = "Moves one square up."; wrong1 = "Moves one square down."; wrong2 = "Moves diagonally up-left."; }
+
+                    for (let f = 0; f < 4; f++) {
+                        // Calculate wrapped position
+                        let pos = (startPos + (f * step) + 9) % 9;
+                        frames[f].push({ index: pos, char: symbol });
+                    }
+                } 
+                else if (level === "medium") {
+                    // MEDIUM: Moves diagonally with wrapping
+                    let direction = Math.floor(Math.random() * 2);
+                    let step = direction === 0 ? 4 : 2; // 4 = down-right, 2 = down-left
+                    
+                    ruleText = direction === 0 ? "Moves diagonally down and to the right." : "Moves diagonally down and to the left.";
+                    wrong1 = "Moves one square horizontally.";
+                    wrong2 = "Moves one square vertically and bounces.";
+
+                    for (let f = 0; f < 4; f++) {
+                        let pos = (startPos + (f * step)) % 9;
+                        frames[f].push({ index: pos, char: symbol });
+                    }
+                }
+                else if (level === "high") {
+                    // HIGH: Two shapes moving in opposite directions
+                    let symbol2 = symbols[(symbols.indexOf(symbol) + 1) % symbols.length];
+                    let startPos2 = (startPos + 4) % 9;
+                    
+                    ruleText = "One shape moves clockwise, the other moves counter-clockwise.";
+                    wrong1 = "Both shapes move in the same direction at different speeds.";
+                    wrong2 = "One shape is stationary while the other rotates.";
+
+                    for (let f = 0; f < 4; f++) {
+                        let pos1 = (startPos + f) % 9;
+                        let pos2 = (startPos2 - f + 9) % 9; // Add 9 to avoid negative modulus
+                        frames[f].push({ index: pos1, char: symbol });
+                        if (pos1 !== pos2) {
+                            frames[f].push({ index: pos2, char: symbol2 });
+                        }
+                    }
+                }
+
+                // Shuffle options
+                let optionsArr = [
+                    { id: "opt1", text: ruleText, isCorrect: true },
+                    { id: "opt2", text: wrong1, isCorrect: false },
+                    { id: "opt3", text: wrong2, isCorrect: false }
+                ];
+                optionsArr.sort(() => Math.random() - 0.5);
+                
+                // Reassign IDs after shuffle
+                let correctId = "";
+                optionsArr.forEach((opt, idx) => {
+                    opt.id = "opt" + (idx + 1);
+                    if (opt.isCorrect) correctId = opt.id;
+                });
+
+                figureData.push({
+                    level: level,
+                    frames: frames,
+                    options: optionsArr,
+                    correctOption: correctId
+                });
             }
-        ];
+        }
+
+        // Generate 30 for each difficulty
+        generateFigures("low", 30);
+        generateFigures("medium", 30);
+        generateFigures("high", 30);
+
+        // Shuffle Figure Data
+        for (let i = figureData.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [figureData[i], figureData[j]] = [figureData[j], figureData[i]];
+        }
 
         // --- STATE MANAGEMENT ---
         let state = { math: 0, latin: 0, fig: 0 };
@@ -522,13 +614,22 @@
             const q = figureData[state.fig];
             updateUI('fig', state.fig, figureData.length, q.level);
 
-            const imgHtml = q.images.map(img => `
-                <div class="figure-box">
-                    <img src="${img}" alt="Matrix" style="max-width:100%; max-height:100%; display:none;" onerror="this.style.display='none'; this.parentElement.innerHTML='[Img]';">
-                </div>
-            `).join('');
-            document.getElementById('fig-content').innerHTML = imgHtml;
+            // Generate HTML for the 4 matrices (frames)
+            let matricesHtml = '';
+            q.frames.forEach(frame => {
+                let gridHtml = '<div class="figure-box">';
+                for (let i = 0; i < 9; i++) {
+                    // Check if a shape exists at this grid index
+                    let shapeInCell = frame.find(item => item.index === i);
+                    gridHtml += `<div class="figure-cell">${shapeInCell ? shapeInCell.char : ''}</div>`;
+                }
+                gridHtml += '</div>';
+                matricesHtml += gridHtml;
+            });
+            
+            document.getElementById('fig-content').innerHTML = matricesHtml;
 
+            // Render dropdown options
             let optionsHtml = '<option value="">--Select--</option>';
             q.options.forEach(opt => {
                 optionsHtml += `<option value="${opt.id}">${opt.text}</option>`;
