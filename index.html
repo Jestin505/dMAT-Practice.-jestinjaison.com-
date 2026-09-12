@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dMAT Core Module Practice</title>
+    <title>Jestin's dMAT Practice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 40px auto;
             max-width: 800px;
             padding: 20px;
-            background-color: #f4f4f9;
+            background-color: #f8f9fa;
             color: #333;
         }
         h1 {
@@ -23,7 +23,7 @@
             gap: 15px;
             margin-bottom: 30px;
         }
-        button {
+        .tab-btn {
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
@@ -33,63 +33,107 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #4a0072;
-        }
-        .check-btn {
-            background-color: #0288d1;
-            margin-top: 15px;
-        }
-        .check-btn:hover {
-            background-color: #01579b;
-        }
+        .tab-btn:hover { background-color: #4a0072; }
+        
         .question-container {
             display: none;
             background-color: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .difficulty {
-            display: inline-block;
-            padding: 5px 10px;
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 4px;
-            font-weight: bold;
+        
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
         }
-        table {
-            border-collapse: collapse;
-            margin: 20px 0;
+        
+        .difficulty {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: capitalize;
         }
+        .diff-low { background-color: #e8f5e9; color: #2e7d32; }
+        .diff-medium { background-color: #fff3e0; color: #ef6c00; }
+        .diff-high { background-color: #ffebee; color: #c62828; }
+
+        .question-counter {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .check-btn {
+            background-color: #0288d1;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .check-btn:hover { background-color: #01579b; }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .nav-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-btn:hover { background-color: #bdbdbd; }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Specific question styling */
+        .math-box {
+            font-family: monospace;
+            font-size: 18px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #7b1fa2;
+            margin: 15px 0;
+        }
+        .input-group { margin-right: 15px; display: inline-block; }
+        input[type="number"], input[type="text"] {
+            padding: 8px;
+            width: 60px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+        
+        table { border-collapse: collapse; margin: 20px 0; }
         td {
-            width: 40px;
-            height: 40px;
+            width: 45px; height: 45px;
             border: 1px solid #333;
             text-align: center;
             font-weight: bold;
             font-size: 18px;
         }
-        .highlight {
-            background-color: #ffe0b2;
-            color: #e65100;
-        }
-        input[type="text"], input[type="number"] {
-            padding: 8px;
-            font-size: 16px;
-            width: 60px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .feedback {
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 16px;
-        }
+        .highlight { background-color: #ffe0b2; color: #e65100; }
+
+        .feedback { margin-top: 15px; font-weight: bold; }
         .correct { color: #2e7d32; }
         .incorrect { color: #c62828; }
+        
+        .figure-grid {
+            display: flex; gap: 10px; margin: 15px 0;
+        }
+        .figure-box {
+            width: 100px; height: 100px;
+            border: 1px dashed #999;
+            display: flex; align-items: center; justify-content: center;
+            background-size: cover;
+        }
     </style>
 </head>
 <body>
@@ -97,109 +141,260 @@
     <h1>dMAT Practice</h1>
 
     <div class="button-container">
-        <button onclick="showQuestion('figure-sequence')">1. Figure Sequence</button>
-        <button onclick="showQuestion('math-equation')">2. Mathematical Equation</button>
-        <button onclick="showQuestion('latin-squares')">3. Latin Squares</button>
+        <button class="tab-btn" onclick="switchTab('figure-section')">1. Figure Sequence</button>
+        <button class="tab-btn" onclick="switchTab('math-section')">2. Mathematical Equation</button>
+        <button class="tab-btn" onclick="switchTab('latin-section')">3. Latin Squares</button>
     </div>
 
-    <!-- Figure Sequence Question -->
-    <div id="figure-sequence" class="question-container">
-        <h2>Figure Sequence</h2>
-        <span class="difficulty">Difficulty: Low</span>
-        <p>Determine the pattern of the matrices[cite: 1].</p>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 1]</div>
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 2]</div>
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 3]</div>
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 4]</div>
+    <!-- FIGURE SEQUENCE SECTION -->
+    <div id="figure-section" class="question-container">
+        <div class="header-row">
+            <h2>Figure Sequence</h2>
+            <span id="fig-counter" class="question-counter"></span>
         </div>
-        <label for="fig-answer">Which rule describes the movement?</label><br><br>
-        <select id="fig-answer" style="padding: 8px; font-size: 14px;">
-            <option value="">--Select--</option>
-            <option value="wrong1">Moves diagonally one field at a time.</option>
-            <option value="correct">Moves vertically one field at a time and bounces off the boundary.</option>
-            <option value="wrong2">Rotates 90 degrees to the right.</option>
-        </select>
+        <span id="fig-diff" class="difficulty"></span>
+        <p>Determine the pattern of the matrices.</p>
+        
+        <div id="fig-content" class="figure-grid"></div>
+        
+        <select id="fig-answer" style="padding: 8px; font-size: 14px; width: 100%; max-width: 400px;"></select>
         <br>
         <button class="check-btn" onclick="checkFigure()">Check Answer</button>
         <div id="fig-feedback" class="feedback"></div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn" id="fig-prev" onclick="changeQuestion('fig', -1)">Previous</button>
+            <button class="nav-btn" id="fig-next" onclick="changeQuestion('fig', 1)">Next</button>
+        </div>
     </div>
 
-    <!-- Mathematical Equation Question -->
-    <div id="math-equation" class="question-container">
-        <h2>Mathematical Equations</h2>
-        <span class="difficulty">Difficulty: Low</span>
-        <p>Find out which numbers must be used for the unknowns (letters) so that all equations are correct[cite: 1].</p>
-        <div style="font-family: monospace; font-size: 18px; background: #f9f9f9; padding: 15px; border-left: 4px solid #7b1fa2; margin-bottom: 15px;">
-            <p>7 + A = 14</p>
-            <p>B - 3 = A</p>
+    <!-- MATHEMATICAL EQUATION SECTION -->
+    <div id="math-section" class="question-container">
+        <div class="header-row">
+            <h2>Mathematical Equations</h2>
+            <span id="math-counter" class="question-counter"></span>
         </div>
-        <label>A = <input type="number" id="math-a"></label>
-        <label>B = <input type="number" id="math-b"></label>
-        <br>
+        <span id="math-diff" class="difficulty"></span>
+        <p>Find out which numbers must be used for the unknowns (letters) so that all equations are correct.</p>
+        
+        <div id="math-content" class="math-box"></div>
+        <div id="math-inputs"></div>
+        
         <button class="check-btn" onclick="checkMath()">Check Answer</button>
         <div id="math-feedback" class="feedback"></div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn" id="math-prev" onclick="changeQuestion('math', -1)">Previous</button>
+            <button class="nav-btn" id="math-next" onclick="changeQuestion('math', 1)">Next</button>
+        </div>
     </div>
 
-    <!-- Latin Squares Question -->
-    <div id="latin-squares" class="question-container">
-        <h2>Latin Squares</h2>
-        <span class="difficulty">Difficulty: Low</span>
-        <p>Decide which letter belongs in the field with the question mark[cite: 1].</p>
-        <table>
-            <tr><td>B</td><td class="highlight">?</td><td>A</td><td>D</td><td></td></tr>
-            <tr><td>A</td><td>B</td><td>E</td><td>C</td><td></td></tr>
-            <tr><td></td><td>A</td><td></td><td></td><td></td></tr>
-            <tr><td>C</td><td></td><td></td><td></td><td></td></tr>
-            <tr><td>D</td><td>E</td><td></td><td>B</td><td></td></tr>
-        </table>
+    <!-- LATIN SQUARES SECTION -->
+    <div id="latin-section" class="question-container">
+        <div class="header-row">
+            <h2>Latin Squares</h2>
+            <span id="latin-counter" class="question-counter"></span>
+        </div>
+        <span id="latin-diff" class="difficulty"></span>
+        <p>Decide which letter belongs in the field with the question mark.</p>
+        
+        <div id="latin-content"></div>
+        
         <label>Missing Letter = <input type="text" id="latin-answer" maxlength="1" style="text-transform: uppercase;"></label>
         <br>
         <button class="check-btn" onclick="checkLatin()">Check Answer</button>
         <div id="latin-feedback" class="feedback"></div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn" id="latin-prev" onclick="changeQuestion('latin', -1)">Previous</button>
+            <button class="nav-btn" id="latin-next" onclick="changeQuestion('latin', 1)">Next</button>
+        </div>
     </div>
-    <script src="math-equations.js"></script>
-    <script src="latin-squares.js"></script>
+
     <script>
-        function showQuestion(questionId) {
-            document.querySelectorAll('.question-container').forEach(container => {
-                container.style.display = 'none';
-            });
-            document.querySelectorAll('.feedback').forEach(fb => {
-                fb.textContent = ''; 
-            });
-            document.getElementById(questionId).style.display = 'block';
-        }
+        // --- DATABASES ---
+        const mathData = [
+            { id: 1, level: "low", eqs: ["7 + A = 14", "B - 3 = A"], ans: { A: 7, B: 10 } },
+            { id: 2, level: "low", eqs: ["A + 5 = 12", "B - A = 4"], ans: { A: 7, B: 11 } },
+            { id: 3, level: "medium", eqs: ["A = 6", "2 * C = B", "A + B = 14"], ans: { A: 6, B: 8, C: 4 } }
+        ];
 
-        function showFeedback(elementId, isCorrect, correctText) {
-            const el = document.getElementById(elementId);
-            if (isCorrect) {
-                el.textContent = "Correct! " + correctText;
-                el.className = "feedback correct";
-            } else {
-                el.textContent = "Incorrect. Try again!";
-                el.className = "feedback incorrect";
+        const latinData = [
+            {
+                id: 1, level: "low",
+                grid: [
+                    ['B', '?', 'A', 'D', null],
+                    ['A', 'B', 'E', 'C', null],
+                    [null, 'A', null, null, null],
+                    ['C', null, null, null, null],
+                    ['D', 'E', null, 'B', null]
+                ],
+                ans: "C"
+            },
+            {
+                id: 2, level: "medium",
+                grid: [
+                    ['A', null, 'C', null, 'E'],
+                    [null, 'B', null, 'D', null],
+                    ['C', null, '?', null, 'A'],
+                    [null, 'D', null, 'E', null],
+                    ['E', null, 'A', null, 'C']
+                ],
+                ans: "E"
             }
+        ];
+
+        const figureData = [
+            {
+                id: 1, level: "low",
+                images: ["img1.png", "img2.png", "img3.png", "img4.png"], // Replace with real paths
+                options: [
+                    { id: "opt1", text: "Moves diagonally one field at a time." },
+                    { id: "opt2", text: "Moves vertically one field at a time and bounces off the boundary." },
+                    { id: "opt3", text: "Rotates 90 degrees to the right." }
+                ],
+                correctOption: "opt2"
+            }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let state = {
+            math: 0,
+            latin: 0,
+            fig: 0
+        };
+
+        // --- CORE LOGIC ---
+        function switchTab(sectionId) {
+            document.querySelectorAll('.question-container').forEach(c => c.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Render the current question for the active tab
+            if (sectionId === 'math-section') renderMath();
+            if (sectionId === 'latin-section') renderLatin();
+            if (sectionId === 'figure-section') renderFigure();
         }
 
-        function checkFigure() {
-            const answer = document.getElementById('fig-answer').value;
-            // Solution from dMAT Exercise 1: moves vertically bouncing off upper/lower boundary[cite: 1]
-            showFeedback('fig-feedback', answer === 'correct', 'The symbol moves vertically and bounces off the boundary.');
+        function changeQuestion(type, direction) {
+            let dataArray = type === 'math' ? mathData : type === 'latin' ? latinData : figureData;
+            state[type] += direction;
+            
+            // Boundaries
+            if (state[type] < 0) state[type] = 0;
+            if (state[type] >= dataArray.length) state[type] = dataArray.length - 1;
+
+            // Clear old feedback
+            document.getElementById(`${type}-feedback`).textContent = '';
+            
+            if (type === 'math') renderMath();
+            if (type === 'latin') renderLatin();
+            if (type === 'fig') renderFigure();
+        }
+
+        function updateUI(type, currentIdx, totalLength, level) {
+            document.getElementById(`${type}-counter`).textContent = `Question ${currentIdx + 1} of ${totalLength}`;
+            const diffEl = document.getElementById(`${type}-diff`);
+            diffEl.textContent = `Difficulty: ${level}`;
+            diffEl.className = `difficulty diff-${level}`;
+            
+            document.getElementById(`${type}-prev`).disabled = currentIdx === 0;
+            document.getElementById(`${type}-next`).disabled = currentIdx === totalLength - 1;
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderMath() {
+            const q = mathData[state.math];
+            updateUI('math', state.math, mathData.length, q.level);
+
+            // Render Equations
+            const eqHtml = q.eqs.map(eq => `<p>${eq}</p>`).join('');
+            document.getElementById('math-content').innerHTML = eqHtml;
+
+            // Render Inputs dynamically based on required variables
+            const inputsHtml = Object.keys(q.ans).map(variable => `
+                <div class="input-group">
+                    <label>${variable} = <input type="number" id="math-input-${variable}"></label>
+                </div>
+            `).join('');
+            document.getElementById('math-inputs').innerHTML = inputsHtml;
+        }
+
+        function renderLatin() {
+            const q = latinData[state.latin];
+            updateUI('latin', state.latin, latinData.length, q.level);
+            document.getElementById('latin-answer').value = ''; // Reset input
+
+            // Render Table
+            let tableHtml = '<table>';
+            q.grid.forEach(row => {
+                tableHtml += '<tr>';
+                row.forEach(cell => {
+                    if (cell === '?') {
+                        tableHtml += `<td class="highlight">?</td>`;
+                    } else {
+                        tableHtml += `<td>${cell || ''}</td>`;
+                    }
+                });
+                tableHtml += '</tr>';
+            });
+            tableHtml += '</table>';
+            document.getElementById('latin-content').innerHTML = tableHtml;
+        }
+
+        function renderFigure() {
+            const q = figureData[state.fig];
+            updateUI('fig', state.fig, figureData.length, q.level);
+
+            // Render image boxes (Will show broken image icons until you add the real paths)
+            const imgHtml = q.images.map(img => `
+                <div class="figure-box">
+                    <img src="${img}" alt="Matrix" style="max-width:100%; max-height:100%; display:none;" onerror="this.style.display='none'; this.parentElement.innerHTML='[Img]';">
+                </div>
+            `).join('');
+            document.getElementById('fig-content').innerHTML = imgHtml;
+
+            // Render dropdown options
+            let optionsHtml = '<option value="">--Select--</option>';
+            q.options.forEach(opt => {
+                optionsHtml += `<option value="${opt.id}">${opt.text}</option>`;
+            });
+            document.getElementById('fig-answer').innerHTML = optionsHtml;
+        }
+
+        // --- CHECKING FUNCTIONS ---
+        function showFeedback(elementId, isCorrect) {
+            const el = document.getElementById(elementId);
+            el.textContent = isCorrect ? "Correct!" : "Incorrect. Try again.";
+            el.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
         }
 
         function checkMath() {
-            const a = document.getElementById('math-a').value;
-            const b = document.getElementById('math-b').value;
-            // Solution from dMAT Exercise 1: A=7, B=10[cite: 1]
-            showFeedback('math-feedback', a === '7' && b === '10', 'A is 7 and B is 10.');
+            const q = mathData[state.math];
+            let isAllCorrect = true;
+            
+            Object.keys(q.ans).forEach(variable => {
+                const userVal = document.getElementById(`math-input-${variable}`).value;
+                if (parseInt(userVal) !== q.ans[variable]) {
+                    isAllCorrect = false;
+                }
+            });
+            showFeedback('math-feedback', isAllCorrect);
         }
 
         function checkLatin() {
-            const answer = document.getElementById('latin-answer').value.toUpperCase();
-            // Solution from dMAT Exercise 1: C[cite: 1]
-            showFeedback('latin-feedback', answer === 'C', 'C is correct because D must go to the end of the row.');
+            const userVal = document.getElementById('latin-answer').value.toUpperCase();
+            const correctVal = latinData[state.latin].ans;
+            showFeedback('latin-feedback', userVal === correctVal);
         }
+
+        function checkFigure() {
+            const userVal = document.getElementById('fig-answer').value;
+            const correctVal = figureData[state.fig].correctOption;
+            showFeedback('fig-feedback', userVal === correctVal && userVal !== '');
+        }
+
+        // Initialize first view
+        switchTab('math-section');
     </script>
 </body>
 </html>
