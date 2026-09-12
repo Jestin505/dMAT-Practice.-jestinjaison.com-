@@ -15,7 +15,7 @@
         }
         h1 {
             text-align: center;
-            color: #7b1fa2; /* Matching the dMAT brand color */
+            color: #7b1fa2; 
         }
         .button-container {
             display: flex;
@@ -35,6 +35,13 @@
         }
         button:hover {
             background-color: #4a0072;
+        }
+        .check-btn {
+            background-color: #0288d1;
+            margin-top: 15px;
+        }
+        .check-btn:hover {
+            background-color: #01579b;
         }
         .question-container {
             display: none;
@@ -68,6 +75,21 @@
             background-color: #ffe0b2;
             color: #e65100;
         }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            font-size: 16px;
+            width: 60px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .correct { color: #2e7d32; }
+        .incorrect { color: #c62828; }
     </style>
 </head>
 <body>
@@ -84,32 +106,46 @@
     <div id="figure-sequence" class="question-container">
         <h2>Figure Sequence</h2>
         <span class="difficulty">Difficulty: Low</span>
-        <p>Determine what the next two matrices look like based on the logical sequence of the previous figures.</p>
-        <!-- Replace the src with actual images from the PDF -->
-        <div style="display: flex; gap: 10px;">
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Image 1]</div>
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Image 2]</div>
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Image 3]</div>
-            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Image 4]</div>
+        <p>Determine the pattern of the matrices[cite: 1].</p>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 1]</div>
+            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 2]</div>
+            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 3]</div>
+            <div style="width: 100px; height: 100px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center;">[Img 4]</div>
         </div>
+        <label for="fig-answer">Which rule describes the movement?</label><br><br>
+        <select id="fig-answer" style="padding: 8px; font-size: 14px;">
+            <option value="">--Select--</option>
+            <option value="wrong1">Moves diagonally one field at a time.</option>
+            <option value="correct">Moves vertically one field at a time and bounces off the boundary.</option>
+            <option value="wrong2">Rotates 90 degrees to the right.</option>
+        </select>
+        <br>
+        <button class="check-btn" onclick="checkFigure()">Check Answer</button>
+        <div id="fig-feedback" class="feedback"></div>
     </div>
 
     <!-- Mathematical Equation Question -->
     <div id="math-equation" class="question-container">
         <h2>Mathematical Equations</h2>
         <span class="difficulty">Difficulty: Low</span>
-        <p>Find out which numbers must be used for the unknowns (letters) so that all equations are correct.</p>
-        <div style="font-family: monospace; font-size: 18px; background: #f9f9f9; padding: 15px; border-left: 4px solid #7b1fa2;">
+        <p>Find out which numbers must be used for the unknowns (letters) so that all equations are correct[cite: 1].</p>
+        <div style="font-family: monospace; font-size: 18px; background: #f9f9f9; padding: 15px; border-left: 4px solid #7b1fa2; margin-bottom: 15px;">
             <p>7 + A = 14</p>
             <p>B - 3 = A</p>
         </div>
+        <label>A = <input type="number" id="math-a"></label>
+        <label>B = <input type="number" id="math-b"></label>
+        <br>
+        <button class="check-btn" onclick="checkMath()">Check Answer</button>
+        <div id="math-feedback" class="feedback"></div>
     </div>
 
     <!-- Latin Squares Question -->
     <div id="latin-squares" class="question-container">
         <h2>Latin Squares</h2>
         <span class="difficulty">Difficulty: Low</span>
-        <p>Decide which letter belongs in the field with the question mark. Each letter can only appear once in each row and each column.</p>
+        <p>Decide which letter belongs in the field with the question mark[cite: 1].</p>
         <table>
             <tr><td>B</td><td class="highlight">?</td><td>A</td><td>D</td><td></td></tr>
             <tr><td>A</td><td>B</td><td>E</td><td>C</td><td></td></tr>
@@ -117,21 +153,51 @@
             <tr><td>C</td><td></td><td></td><td></td><td></td></tr>
             <tr><td>D</td><td>E</td><td></td><td>B</td><td></td></tr>
         </table>
+        <label>Missing Letter = <input type="text" id="latin-answer" maxlength="1" style="text-transform: uppercase;"></label>
+        <br>
+        <button class="check-btn" onclick="checkLatin()">Check Answer</button>
+        <div id="latin-feedback" class="feedback"></div>
     </div>
 
     <script>
         function showQuestion(questionId) {
-            // Hide all question containers
-            const containers = document.querySelectorAll('.question-container');
-            containers.forEach(container => {
+            document.querySelectorAll('.question-container').forEach(container => {
                 container.style.display = 'none';
             });
+            document.querySelectorAll('.feedback').forEach(fb => {
+                fb.textContent = ''; 
+            });
+            document.getElementById(questionId).style.display = 'block';
+        }
 
-            // Show the selected question container
-            const selectedContainer = document.getElementById(questionId);
-            if (selectedContainer) {
-                selectedContainer.style.display = 'block';
+        function showFeedback(elementId, isCorrect, correctText) {
+            const el = document.getElementById(elementId);
+            if (isCorrect) {
+                el.textContent = "Correct! " + correctText;
+                el.className = "feedback correct";
+            } else {
+                el.textContent = "Incorrect. Try again!";
+                el.className = "feedback incorrect";
             }
+        }
+
+        function checkFigure() {
+            const answer = document.getElementById('fig-answer').value;
+            // Solution from dMAT Exercise 1: moves vertically bouncing off upper/lower boundary[cite: 1]
+            showFeedback('fig-feedback', answer === 'correct', 'The symbol moves vertically and bounces off the boundary.');
+        }
+
+        function checkMath() {
+            const a = document.getElementById('math-a').value;
+            const b = document.getElementById('math-b').value;
+            // Solution from dMAT Exercise 1: A=7, B=10[cite: 1]
+            showFeedback('math-feedback', a === '7' && b === '10', 'A is 7 and B is 10.');
+        }
+
+        function checkLatin() {
+            const answer = document.getElementById('latin-answer').value.toUpperCase();
+            // Solution from dMAT Exercise 1: C[cite: 1]
+            showFeedback('latin-feedback', answer === 'C', 'C is correct because D must go to the end of the row.');
         }
     </script>
 </body>
