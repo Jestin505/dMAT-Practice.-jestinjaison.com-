@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jestin's dMAT Practice</title>
+    <title>dMAT Practice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -212,68 +212,101 @@
     </div>
 
     <script>
-        // --- DATABASES ---
-      // --- MATHEMATICAL EQUATIONS DATABASE ---
-const mathData = [];
+        // --- DYNAMIC MATH GENERATOR ---
+        const mathData = [];
+        const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-// Helper function to pick random numbers between min and max
-const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        // Ensure unique variables between 0 and 20
+        function getUniqueVars(count) {
+            let nums = new Set();
+            while (nums.size < count) nums.add(rnd(0, 20));
+            return Array.from(nums);
+        }
 
-// Helper function to ensure letters get unique whole numbers between 1 and 20
-function getUniqueVars(count) {
-    let nums = new Set();
-    while (nums.size < count) nums.add(rnd(1, 20));
-    return Array.from(nums);
-}
+        // 1. Generate 30 Low Difficulty (2 Variables)
+        for (let i = 0; i < 30; i++) {
+            let [a, b] = getUniqueVars(2);
+            mathData.push({
+                level: "low",
+                eqs: [`A + B = ${a + b}`, a > b ? `A - ${a - b} = B` : `B - ${b - a} = A`],
+                ans: { A: a, B: b }
+            });
+        }
 
-// 1. Generate 30 Low Difficulty (2 Variables)
-for (let i = 0; i < 30; i++) {
-    let [a, b] = getUniqueVars(2);
-    mathData.push({
-        level: "low",
-        eqs: [
-            `A + B = ${a + b}`,
-            a > b ? `A - ${a - b} = B` : `B - ${b - a} = A`
-        ],
-        ans: { A: a, B: b }
-    });
-}
+        // 2. Generate 30 Medium Difficulty (3 Variables)
+        for (let i = 0; i < 30; i++) {
+            let [a, b, c] = getUniqueVars(3);
+            mathData.push({
+                level: "medium",
+                eqs: [`A + B = ${a + b}`, c > a ? `C - A = ${c - a}` : `A - C = ${a - c}`, `B = ${b}`],
+                ans: { A: a, B: b, C: c }
+            });
+        }
 
-// 2. Generate 30 Medium Difficulty (3 Variables)
-for (let i = 0; i < 30; i++) {
-    let [a, b, c] = getUniqueVars(3);
-    mathData.push({
-        level: "medium",
-        eqs: [
-            `A + B = ${a + b}`,
-            c > a ? `C - A = ${c - a}` : `A - C = ${a - c}`,
-            `B = ${b}`
-        ],
-        ans: { A: a, B: b, C: c }
-    });
-}
+        // 3. Generate 30 High Difficulty (dMAT Anchor Pattern)
+        for (let i = 0; i < 30; i++) {
+            let vars = ['A', 'B', 'C', 'D'];
+            for (let k = vars.length - 1; k > 0; k--) {
+                const j = Math.floor(Math.random() * (k + 1));
+                [vars[k], vars[j]] = [vars[j], vars[k]];
+            }
+            const [baseVar, v1, v2, v3] = vars;
+            
+            // Anchor variable needs to be small so multipliers don't exceed 20, kept > 0 to ensure mult works
+            const baseVal = rnd(1, 4); 
+            let usedVals = new Set([baseVal]);
 
-// 3. Generate 30 High Difficulty (4 Variables)
-for (let i = 0; i < 30; i++) {
-    let [a, b, c, d] = getUniqueVars(4);
-    mathData.push({
-        level: "high",
-        eqs: [
-            `A + B = ${a + b}`,
-            `C + D = ${c + d}`,
-            a > c ? `A - C = ${a - c}` : `C - A = ${c - a}`,
-            `B + D = ${b + d}`
-        ],
-        ans: { A: a, B: b, C: c, D: d }
-    });
-}
+            let mult1, v1Val;
+            do {
+                mult1 = rnd(2, 5);
+                v1Val = baseVal * mult1;
+            } while (v1Val > 20 || usedVals.has(v1Val));
+            usedVals.add(v1Val);
 
-// 4. Randomize the Order (Fisher-Yates Shuffle Algorithm)
-for (let i = mathData.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [mathData[i], mathData[j]] = [mathData[j], mathData[i]];
-}
+            let v2Val, c2;
+            do {
+                c2 = rnd(0, 15);
+                v2Val = Math.random() > 0.5 ? baseVal + c2 : c2 - baseVal;
+            } while (v2Val < 0 || v2Val > 20 || usedVals.has(v2Val));
+            usedVals.add(v2Val);
+            let eq2 = v2Val >= baseVal ? `${c2} + ${baseVar} = ${v2}` : `${c2} - ${baseVar} = ${v2}`;
 
+            let v3Val, mult2, offset;
+            do {
+                mult2 = rnd(2, 4);
+                offset = rnd(0, 6);
+                v3Val = Math.random() > 0.5 ? (baseVal * mult2) + offset : (baseVal * mult2) - offset;
+            } while (v3Val < 0 || v3Val > 20 || usedVals.has(v3Val));
+            usedVals.add(v3Val);
+            let eq3 = v3Val >= (baseVal * mult2) ? `${mult2} * ${baseVar} + ${offset} = ${v3}` : `${mult2} * ${baseVar} - ${offset} = ${v3}`;
+
+            let ansObj = { [baseVar]: baseVal, [v1]: v1Val, [v2]: v2Val, [v3]: v3Val };
+            let sortedAns = { A: ansObj.A, B: ansObj.B, C: ansObj.C, D: ansObj.D };
+
+            let masterLHS, masterResult, terms;
+            do {
+                masterLHS = `A ${Math.random() > 0.5 ? '+' : '-'} B ${Math.random() > 0.5 ? '+' : '-'} C ${Math.random() > 0.5 ? '+' : '-'} D`;
+                terms = masterLHS.split(' ');
+                masterResult = sortedAns[terms[0]];
+                for(let t=1; t<terms.length; t+=2) {
+                    masterResult += terms[t] === '+' ? sortedAns[terms[t+1]] : -sortedAns[terms[t+1]];
+                }
+            } while (masterResult < 0 || masterResult > 40); 
+
+            mathData.push({
+                level: "high",
+                eqs: [`${masterLHS} = ${masterResult}`, `${mult1} * ${baseVar} = ${v1}`, eq2, eq3],
+                ans: sortedAns
+            });
+        }
+
+        // Shuffle Math Data
+        for (let i = mathData.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [mathData[i], mathData[j]] = [mathData[j], mathData[i]];
+        }
+
+        // --- STATIC DATABASES (Latin Squares & Figure Sequences) ---
         const latinData = [
             {
                 id: 1, level: "low",
@@ -302,7 +335,7 @@ for (let i = mathData.length - 1; i > 0; i--) {
         const figureData = [
             {
                 id: 1, level: "low",
-                images: ["img1.png", "img2.png", "img3.png", "img4.png"], // Replace with real paths
+                images: ["images/fig-1.png", "images/fig-2.png", "images/fig-3.png", "images/fig-4.png"],
                 options: [
                     { id: "opt1", text: "Moves diagonally one field at a time." },
                     { id: "opt2", text: "Moves vertically one field at a time and bounces off the boundary." },
@@ -313,18 +346,13 @@ for (let i = mathData.length - 1; i > 0; i--) {
         ];
 
         // --- STATE MANAGEMENT ---
-        let state = {
-            math: 0,
-            latin: 0,
-            fig: 0
-        };
+        let state = { math: 0, latin: 0, fig: 0 };
 
         // --- CORE LOGIC ---
         function switchTab(sectionId) {
             document.querySelectorAll('.question-container').forEach(c => c.style.display = 'none');
             document.getElementById(sectionId).style.display = 'block';
             
-            // Render the current question for the active tab
             if (sectionId === 'math-section') renderMath();
             if (sectionId === 'latin-section') renderLatin();
             if (sectionId === 'figure-section') renderFigure();
@@ -334,11 +362,9 @@ for (let i = mathData.length - 1; i > 0; i--) {
             let dataArray = type === 'math' ? mathData : type === 'latin' ? latinData : figureData;
             state[type] += direction;
             
-            // Boundaries
             if (state[type] < 0) state[type] = 0;
             if (state[type] >= dataArray.length) state[type] = dataArray.length - 1;
 
-            // Clear old feedback
             document.getElementById(`${type}-feedback`).textContent = '';
             
             if (type === 'math') renderMath();
@@ -361,11 +387,9 @@ for (let i = mathData.length - 1; i > 0; i--) {
             const q = mathData[state.math];
             updateUI('math', state.math, mathData.length, q.level);
 
-            // Render Equations
             const eqHtml = q.eqs.map(eq => `<p>${eq}</p>`).join('');
             document.getElementById('math-content').innerHTML = eqHtml;
 
-            // Render Inputs dynamically based on required variables
             const inputsHtml = Object.keys(q.ans).map(variable => `
                 <div class="input-group">
                     <label>${variable} = <input type="number" id="math-input-${variable}"></label>
@@ -377,9 +401,8 @@ for (let i = mathData.length - 1; i > 0; i--) {
         function renderLatin() {
             const q = latinData[state.latin];
             updateUI('latin', state.latin, latinData.length, q.level);
-            document.getElementById('latin-answer').value = ''; // Reset input
+            document.getElementById('latin-answer').value = ''; 
 
-            // Render Table
             let tableHtml = '<table>';
             q.grid.forEach(row => {
                 tableHtml += '<tr>';
@@ -400,7 +423,6 @@ for (let i = mathData.length - 1; i > 0; i--) {
             const q = figureData[state.fig];
             updateUI('fig', state.fig, figureData.length, q.level);
 
-            // Render image boxes (Will show broken image icons until you add the real paths)
             const imgHtml = q.images.map(img => `
                 <div class="figure-box">
                     <img src="${img}" alt="Matrix" style="max-width:100%; max-height:100%; display:none;" onerror="this.style.display='none'; this.parentElement.innerHTML='[Img]';">
@@ -408,7 +430,6 @@ for (let i = mathData.length - 1; i > 0; i--) {
             `).join('');
             document.getElementById('fig-content').innerHTML = imgHtml;
 
-            // Render dropdown options
             let optionsHtml = '<option value="">--Select--</option>';
             q.options.forEach(opt => {
                 optionsHtml += `<option value="${opt.id}">${opt.text}</option>`;
