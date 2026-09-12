@@ -213,11 +213,66 @@
 
     <script>
         // --- DATABASES ---
-        const mathData = [
-            { id: 1, level: "low", eqs: ["7 + A = 14", "B - 3 = A"], ans: { A: 7, B: 10 } },
-            { id: 2, level: "low", eqs: ["A + 5 = 12", "B - A = 4"], ans: { A: 7, B: 11 } },
-            { id: 3, level: "medium", eqs: ["A = 6", "2 * C = B", "A + B = 14"], ans: { A: 6, B: 8, C: 4 } }
-        ];
+      // --- MATHEMATICAL EQUATIONS DATABASE ---
+const mathData = [];
+
+// Helper function to pick random numbers between min and max
+const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+// Helper function to ensure letters get unique whole numbers between 1 and 20
+function getUniqueVars(count) {
+    let nums = new Set();
+    while (nums.size < count) nums.add(rnd(1, 20));
+    return Array.from(nums);
+}
+
+// 1. Generate 30 Low Difficulty (2 Variables)
+for (let i = 0; i < 30; i++) {
+    let [a, b] = getUniqueVars(2);
+    mathData.push({
+        level: "low",
+        eqs: [
+            `A + B = ${a + b}`,
+            a > b ? `A - ${a - b} = B` : `B - ${b - a} = A`
+        ],
+        ans: { A: a, B: b }
+    });
+}
+
+// 2. Generate 30 Medium Difficulty (3 Variables)
+for (let i = 0; i < 30; i++) {
+    let [a, b, c] = getUniqueVars(3);
+    mathData.push({
+        level: "medium",
+        eqs: [
+            `A + B = ${a + b}`,
+            c > a ? `C - A = ${c - a}` : `A - C = ${a - c}`,
+            `B = ${b}`
+        ],
+        ans: { A: a, B: b, C: c }
+    });
+}
+
+// 3. Generate 30 High Difficulty (4 Variables)
+for (let i = 0; i < 30; i++) {
+    let [a, b, c, d] = getUniqueVars(4);
+    mathData.push({
+        level: "high",
+        eqs: [
+            `A + B = ${a + b}`,
+            `C + D = ${c + d}`,
+            a > c ? `A - C = ${a - c}` : `C - A = ${c - a}`,
+            `B + D = ${b + d}`
+        ],
+        ans: { A: a, B: b, C: c, D: d }
+    });
+}
+
+// 4. Randomize the Order (Fisher-Yates Shuffle Algorithm)
+for (let i = mathData.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [mathData[i], mathData[j]] = [mathData[j], mathData[i]];
+}
 
         const latinData = [
             {
